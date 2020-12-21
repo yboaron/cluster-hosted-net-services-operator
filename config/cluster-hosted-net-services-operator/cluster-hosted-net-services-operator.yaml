@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-hosted-net-services-operator
+  namespace: system
+  labels:
+    k8s-app: cluster-hosted-net-services-operator
+  annotations:
+    exclude.release.openshift.io/internal-openshift-hosted: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: cluster-hosted-net-services-operator
+  template:
+    metadata:
+      labels:
+        k8s-app: cluster-hosted-net-services-operator
+    spec:
+      priorityClassName: system-node-critical
+      serviceAccountName: cluster-hosted-net-services-operator
+      containers:
+      - name: cluster-hosted-net-services-operator
+        image: controller
+        command:
+        - /manager
+        env:
+        - name: RELEASE_VERSION
+          value: "0.0.1-snapshot"
+        - name: COMPONENT_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: METRICS_PORT
+          value: "8080"
+        - name: HANDLER_NAMESPACE
+          value: "cluster-hosted-net-services"
+        - name: ON_PREM_API_VIP
+          value: "192.168.111.99"
+        - name: ON_PREM_INGRESS_VIP
+          value: "192.168.111.88"
+        - name: DNS_BASE_DOMAIN
+          value: "test.metalkube.org"
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        volumeMounts:
+        - name: images
+          mountPath: /etc/cluster-hosted-net-services-operator/images
+          readOnly: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      restartPolicy: Always
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 120
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 120
+      volumes:
+      - name: images
+        configMap:
+          name: cluster-hosted-net-services-operator-images

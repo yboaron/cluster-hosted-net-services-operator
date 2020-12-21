@@ -1,0 +1,29 @@
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+spec:
+  tags:
+  - name: cluster-hosted-net-services-operator
+    from:
+      kind: DockerImage
+      name: quay.io/yboaron/cluster-hosted-net-services-operator
+  - name: baremetal-runtimecfg
+    from:
+      kind: DockerImage
+      name: registry.svc.ci.openshift.org/openshift:baremetal-runtimecfg
+  - name: haproxy-router
+    from:
+      kind: DockerImage
+      name: registry.svc.ci.openshift.org/openshift:haproxy-router
+  - name: keepalived-ipfailover
+    from:
+      kind: DockerImage
+      name: registry.svc.ci.openshift.org/openshift:keepalived-ipfailover
+  - name: mdns-publisher
+    from:
+      kind: DockerImage
+      name: registry.svc.ci.openshift.org/openshift:mdns-publisher
+  - name: coredns
+    from:
+      kind: DockerImage
+      name: registry.svc.ci.openshift.org/openshift:coredns

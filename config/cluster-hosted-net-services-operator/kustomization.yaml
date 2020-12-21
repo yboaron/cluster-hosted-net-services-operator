@@ -1,0 +1,11 @@
+resources:
+- cluster-hosted-net-services-operator.yaml
+- cluster-hosted-net-services-sa.yaml
+- cluster-hosted-net-services-ns.yaml
+
+images:
+- name: controller
+  newName: quay.io/yboaron/cluster-hosted-net-services-operator
+  newTag: latest
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

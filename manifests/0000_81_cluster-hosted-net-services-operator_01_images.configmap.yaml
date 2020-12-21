@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-hosted-net-services-operator-images
+  namespace: cluster-hosted-net-services-operator
+data:
+  images.json: >
+    {
+      "clusterHostedCtrl": "quay.io/yboaron/cluster-hosted-ctrl",
+      "baremetalRuntimecfg": "quay.io/openshift/origin-baremetal-runtimecfg",
+      "haproxyRouter": "quay.io/openshift/origin-haproxy-router",
+      "keepalivedIpfailover": "quay.io/openshift/origin-keepalived-ipfailover",
+      "mdnsPublisher": "quay.io/openshift/origin-mdns-publisher",
+      "coredns": "quay.io/openshift/origin-coredns"
+    }

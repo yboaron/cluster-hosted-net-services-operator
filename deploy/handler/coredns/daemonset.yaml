@@ -1,0 +1,128 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cluster-hosted-coredns
+  namespace: {{ .HandlerNamespace }}
+  labels:
+    app: cluster-hosted
+    component:  cluster-hosted-coredns
+spec:
+  selector:
+    matchLabels:
+      name: cluster-hosted-coredns
+  template:
+    metadata:
+      labels:
+        app: cluster-hosted
+        component: cluster-hosted-coredns
+        name: cluster-hosted-coredns
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+      - operator: "Exists"
+      hostNetwork: true
+      serviceAccountName: cluster-hosted-handler    
+      volumes:
+      - name: resource-dir
+        configMap:
+          name: coredns-template
+          items:
+          - key: "common-Corefile.tmpl"
+            path: "common-Corefile.tmpl"
+      - name: kubeconfig
+        hostPath:
+          path: "/etc/kubernetes/kubeconfig"
+      - name: conf-dir
+        empty-dir: {}
+      - name: nm-resolv
+        hostPath:
+          path: "/var/run/NetworkManager"
+      initContainers:
+      - name: render-config-coredns
+        image: {{ .BaremetalRuntimeCfgImage }}
+        command:
+        - runtimecfg
+        - render
+        - "/etc/kubernetes/kubeconfig"
+        - "--api-vip"
+        - "{{ .OnPremPlatformAPIServerInternalIP }}"
+        - "--ingress-vip"
+        - "{{ .OnPremPlatformIngressIP }}"
+        - "/config"
+        - "--out-dir"
+        - "/etc/coredns"
+        resources: {}
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: "/etc/kubernetes/kubeconfig"
+        - name: resource-dir
+          mountPath: /config/Corefile.tmpl
+          subPath: common-Corefile.tmpl
+        - name: conf-dir
+          mountPath: "/etc/coredns"
+        imagePullPolicy: IfNotPresent
+      containers:
+      - name: cluster-hosted-coredns
+        securityContext:
+          privileged: true
+        image: {{ .CorednsImage }}
+        args:
+        - "--conf"
+        - "/etc/coredns/Corefile"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: conf-dir
+          mountPath: "/etc/coredns"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 18080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+          timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 18080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: IfNotPresent
+      - name: cluster-hosted-coredns-monitor
+        securityContext:
+          privileged: true
+        image: {{ .BaremetalRuntimeCfgImage }}
+        command:
+        - corednsmonitor
+        - "/etc/kubernetes/kubeconfig"
+        - "/config/Corefile.tmpl"
+        - "/etc/coredns/Corefile"
+        - "--api-vip"
+        - "{{ .OnPremPlatformAPIServerInternalIP }}"
+        - "--ingress-vip"
+        - "{{ .OnPremPlatformIngressIP }}"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi          
+        volumeMounts:
+        - name: kubeconfig
+          mountPath: "/etc/kubernetes/kubeconfig"
+        - name: resource-dir
+          mountPath: /config/Corefile.tmpl
+          subPath: common-Corefile.tmpl
+        - name: conf-dir
+          mountPath: "/etc/coredns"
+        - name: nm-resolv
+          mountPath: "/var/run/NetworkManager"
+        imagePullPolicy: IfNotPresent        

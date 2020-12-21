@@ -1,0 +1,4 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- cluster-hosted-net-services.openshift.io_v1beta1_config.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

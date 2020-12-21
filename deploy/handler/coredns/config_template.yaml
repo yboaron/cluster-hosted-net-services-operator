@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-template
+  namespace: {{ .HandlerNamespace }}
+data:
+  common-Corefile.tmpl: |
+    . {
+        errors
+        health :18080
+        mdns {{ .DnsBaseDomain }} 0 {{`{{.Cluster.Name}}`}} {{`{{.NonVirtualIP}}`}}
+        forward . {{`{{- range $upstream := .DNSUpstreams}} {{$upstream}}{{- end}}`}}
+        cache 30
+        reload
+        template IN {{`{{ .Cluster.IngressVIPRecordType }}`}} {{ .DnsBaseDomain }} {
+            match .*.apps.{{ .DnsBaseDomain }}
+            answer "{{`{{"{{ .Name }}"}}`}} 60 in {{`{{"{{ .Type }}"}}`}} {{ .OnPremPlatformIngressIP }}"
+            fallthrough
+        }
+        template IN {{`{{ .Cluster.IngressVIPEmptyType }}`}} {{ .DnsBaseDomain }} {
+            match .*.apps.{{ .DnsBaseDomain }}
+            fallthrough
+        }
+        template IN {{`{{ .Cluster.APIVIPRecordType }}`}} {{ .DnsBaseDomain }} {
+            match api.{{ .DnsBaseDomain }}
+            answer "{{`{{"{{ .Name }}"}}`}} 60 in {{`{{"{{ .Type }}"}}`}} {{ .OnPremPlatformAPIServerInternalIP }}"
+            fallthrough
+        }
+        template IN {{`{{ .Cluster.APIVIPEmptyType }}`}} {{ .DnsBaseDomain }} {
+            match api.{{ .DnsBaseDomain }}
+            fallthrough
+        }
+        template IN {{`{{ .Cluster.APIVIPRecordType }}`}} {{ .DnsBaseDomain }} {
+            match api-int.{{ .DnsBaseDomain }}
+            answer "{{`{{"{{ .Name }}"}}`}} 60 in {{`{{"{{ .Type }}"}}`}} {{ .OnPremPlatformAPIServerInternalIP }}"
+            fallthrough
+        }
+        template IN {{`{{ .Cluster.APIVIPEmptyType }}`}} {{ .DnsBaseDomain }} {
+            match api-int.{{ .DnsBaseDomain }}
+            fallthrough
+        }
+    }
