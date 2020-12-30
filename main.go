@@ -17,7 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"os"
 
 	osclientset "github.com/openshift/client-go/config/clientset/versioned"
@@ -27,17 +29,21 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	clusterhostednetservicesopenshiftiov1beta1 "github.com/yboaron/cluster-hosted-net-services-operator/api/v1beta1"
 	"github.com/yboaron/cluster-hosted-net-services-operator/controllers"
 	"github.com/yboaron/cluster-hosted-net-services-operator/pkg/names"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	// +kubebuilder:scaffold:imports
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme           = runtime.NewScheme()
+	setupLog         = ctrl.Log.WithName("setup")
+	opertorNamespace string
 )
 
 func init() {
@@ -65,6 +71,11 @@ func main() {
 	releaseVersion := os.Getenv("RELEASE_VERSION")
 	if releaseVersion == "" {
 		ctrl.Log.Info("Environment variable RELEASE_VERSION not provided")
+	}
+
+	opertorNamespace = os.Getenv("COMPONENT_NAMESPACE")
+	if opertorNamespace == "" {
+		ctrl.Log.Info("Environment variable COMPONENT_NAMESPACE not provided")
 	}
 
 	config := ctrl.GetConfigOrDie()
@@ -107,6 +118,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Config")
 		os.Exit(1)
 	}
+
+	// Create default SriovOperatorConfig
+	err = createDefaultOperatorConfig(ctrl.GetConfigOrDie())
+	if err != nil {
+		setupLog.Error(err, "unable to create default ClusterHostedNetServicesConfig")
+		os.Exit(1)
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
@@ -114,4 +133,29 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+func createDefaultOperatorConfig(cfg *rest.Config) error {
+	logger := setupLog.WithName("createDefaultOperatorConfig")
+
+	c, err := client.New(cfg, client.Options{Scheme: scheme})
+	if err != nil {
+		logger.Error(err, "Failed to create client instance")
+		return fmt.Errorf("Couldn't create client: %v", err)
+	}
+	instance := &clusterhostednetservicesopenshiftiov1beta1.Config{}
+	err = c.Get(context.TODO(), types.NamespacedName{Name: controllers.ClusterHostedNetServicesConfigCR, Namespace: opertorNamespace}, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			controllers.UpdateDefaultConfigCR(instance, opertorNamespace)
+			err = c.Create(context.TODO(), instance)
+			logger.Info("Create default ClusterHostedNetServicesOperatorConfig: %v", err)
+			if err != nil {
+				return err
+			}
+		}
+		// Error reading the object - requeue the request.
+		return err
+	}
+	return nil
 }

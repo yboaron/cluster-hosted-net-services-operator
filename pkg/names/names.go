@@ -7,5 +7,5 @@ var ManifestDir = "./bindata"
 const (
 	ClusterHostedConfigName = "clusterhosted"
 	// ComponentName is the full name of CBO
-	ControllerComponentName = "cluster-hosted-operator"
+	ControllerComponentName = "cluster-hosted-net-services-operator"
 )

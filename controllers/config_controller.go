@@ -26,8 +26,10 @@ import (
 	"github.com/openshift/cluster-network-operator/pkg/apply"
 	"github.com/openshift/cluster-network-operator/pkg/render"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	uns "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/types"
 
 	osconfigv1 "github.com/openshift/api/config/v1"
 	osclientset "github.com/openshift/client-go/config/clientset/versioned"
@@ -38,8 +40,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	clusterhostednetservicesopenshiftiov1beta1 "github.com/yboaron/cluster-hosted-net-services-operator/api/v1beta1"
+)
+
+const (
+	// ClusterHostedNetServicesConfigCR is the name of the Config singleton resource
+	ClusterHostedNetServicesConfigCR = "net-configuration"
 )
 
 var containerImages *images.Images
@@ -93,6 +101,22 @@ func IsEnabled(osClient osclientset.Interface) (bool, error) {
 	return true, nil
 }
 
+func UpdateDefaultConfigCR(instance *clusterhostednetservicesopenshiftiov1beta1.Config, opertorNamespace string) {
+	instance.SetName(ClusterHostedNetServicesConfigCR)
+	instance.SetNamespace(opertorNamespace)
+	instance.Spec = clusterhostednetservicesopenshiftiov1beta1.ConfigSpec{
+		LoadBalancer: clusterhostednetservicesopenshiftiov1beta1.HaLoadBalanceConfig{
+			DefaultIngressHA: "Enable",
+			ApiLoadbalance:   "Enable",
+		},
+		DNS: clusterhostednetservicesopenshiftiov1beta1.DnsConfig{
+			NodesResolution: "Enable",
+			ApiResolution:   "Enable",
+			AppsResolution:  "Enable",
+		},
+	}
+}
+
 func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctxt := context.Background()
 	_ = r.Log.WithValues("config", req.NamespacedName)
@@ -112,13 +136,27 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	instance := &clusterhostednetservicesopenshiftiov1beta1.Config{}
-	err = r.Get(ctxt, req.NamespacedName, instance)
-	if err != nil {
-		// Error reading the object - requeue the req.
-		return ctrl.Result{}, err
+	if req.NamespacedName.Name != ClusterHostedNetServicesConfigCR ||
+		req.NamespacedName.Namespace != componentNamespace {
+		r.Log.V(1).Info("ignoring invalid CR", "name", req.NamespacedName.Name)
+		return reconcile.Result{}, nil
 	}
 
+	instance := &clusterhostednetservicesopenshiftiov1beta1.Config{}
+	if err := r.Client.Get(ctxt, types.NamespacedName{Name: ClusterHostedNetServicesConfigCR, Namespace: componentNamespace}, instance); err != nil {
+		if apierrors.IsNotFound(err) {
+			// Default Config object not found, create it.
+			UpdateDefaultConfigCR(instance, componentNamespace)
+			err = r.Create(context.TODO(), instance)
+			if err != nil {
+				r.Log.Error(err, "Failed to create default Operator Config", "Name", ClusterHostedNetServicesConfigCR)
+				return reconcile.Result{}, err
+			}
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		return reconcile.Result{}, err
+	}
 	r.Log.Info("Returned object name", "name", req.NamespacedName.Name)
 
 	if containerImages == nil {
