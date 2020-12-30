@@ -52,6 +52,8 @@ const (
 
 var containerImages *images.Images
 var componentNamespace string
+var onPremPlatformAPIServerInternalIP string
+var onPremPlatformIngressIP string
 
 // ConfigReconciler reconciles a Config object
 type ConfigReconciler struct {
@@ -117,6 +119,20 @@ func UpdateDefaultConfigCR(instance *clusterhostednetservicesopenshiftiov1beta1.
 	}
 }
 
+func (r *ConfigReconciler) updateVipsDetails() error {
+	ctx := context.Background()
+
+	infra, err := r.OSClient.ConfigV1().Infrastructures().Get(ctx, "cluster", metav1.GetOptions{})
+	if err != nil {
+		r.Log.Error(err, "Failed to retrieve VIP details")
+		return err
+	}
+
+	onPremPlatformAPIServerInternalIP = infra.Status.PlatformStatus.BareMetal.APIServerInternalIP
+	onPremPlatformIngressIP = infra.Status.PlatformStatus.BareMetal.IngressIP
+	return nil
+}
+
 func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctxt := context.Background()
 	_ = r.Log.WithValues("config", req.NamespacedName)
@@ -125,6 +141,7 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err != nil {
 		return ctrl.Result{}, errors.Wrap(err, "could not determine whether to run")
 	}
+
 	if !enabled {
 		// set ClusterOperator status to disabled=true, available=true
 		err = r.updateCOStatus(ReasonUnsupported, "Nothing to do on this Platform", "")
@@ -142,6 +159,12 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return reconcile.Result{}, nil
 	}
 
+	if onPremPlatformAPIServerInternalIP == "" || onPremPlatformIngressIP == "" {
+		if err = r.updateVipsDetails(); err != nil {
+			return reconcile.Result{}, err
+		}
+		r.Log.Info("VIPS: %s , %s", onPremPlatformAPIServerInternalIP, onPremPlatformIngressIP)
+	}
 	instance := &clusterhostednetservicesopenshiftiov1beta1.Config{}
 	if err := r.Client.Get(ctxt, types.NamespacedName{Name: ClusterHostedNetServicesConfigCR, Namespace: componentNamespace}, instance); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -261,8 +284,8 @@ func (r *ConfigReconciler) syncKeepalived(instance *clusterhostednetservicesopen
 	// TODO:  add here code to check if Keepalived resources already exist
 	data := render.MakeRenderData()
 	data.Data["HandlerNamespace"] = os.Getenv("HANDLER_NAMESPACE")
-	data.Data["OnPremPlatformAPIServerInternalIP"] = os.Getenv("ON_PREM_API_VIP")
-	data.Data["OnPremPlatformIngressIP"] = os.Getenv("ON_PREM_INGRESS_VIP")
+	data.Data["OnPremPlatformAPIServerInternalIP"] = onPremPlatformAPIServerInternalIP
+	data.Data["OnPremPlatformIngressIP"] = onPremPlatformIngressIP
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["KeepalivedImage"] = containerImages.KeepalivedIpfailover
 
@@ -279,8 +302,8 @@ func (r *ConfigReconciler) syncCoreDNS(instance *clusterhostednetservicesopenshi
 	// TODO:  add here code to check if CoreDNS resources already exist
 	data := render.MakeRenderData()
 	data.Data["HandlerNamespace"] = os.Getenv("HANDLER_NAMESPACE")
-	data.Data["OnPremPlatformAPIServerInternalIP"] = os.Getenv("ON_PREM_API_VIP")
-	data.Data["OnPremPlatformIngressIP"] = os.Getenv("ON_PREM_INGRESS_VIP")
+	data.Data["OnPremPlatformAPIServerInternalIP"] = onPremPlatformAPIServerInternalIP
+	data.Data["OnPremPlatformIngressIP"] = onPremPlatformIngressIP
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["CorednsImage"] = containerImages.Coredns
 	data.Data["DnsBaseDomain"] = os.Getenv("DNS_BASE_DOMAIN")
@@ -298,8 +321,8 @@ func (r *ConfigReconciler) syncMDNS(instance *clusterhostednetservicesopenshifti
 	// TODO:  add here code to check if MDNS resources already exist
 	data := render.MakeRenderData()
 	data.Data["HandlerNamespace"] = os.Getenv("HANDLER_NAMESPACE")
-	data.Data["OnPremPlatformAPIServerInternalIP"] = os.Getenv("ON_PREM_API_VIP")
-	data.Data["OnPremPlatformIngressIP"] = os.Getenv("ON_PREM_INGRESS_VIP")
+	data.Data["OnPremPlatformAPIServerInternalIP"] = onPremPlatformAPIServerInternalIP
+	data.Data["OnPremPlatformIngressIP"] = onPremPlatformIngressIP
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["MdnsPublisherImage"] = containerImages.MdnsPublisher
 
@@ -316,7 +339,7 @@ func (r *ConfigReconciler) syncHaproxy(instance *clusterhostednetservicesopenshi
 	// TODO:  add here code to check if HAProxy resources already exist
 	data := render.MakeRenderData()
 	data.Data["HandlerNamespace"] = os.Getenv("HANDLER_NAMESPACE")
-	data.Data["OnPremPlatformAPIServerInternalIP"] = os.Getenv("ON_PREM_API_VIP")
+	data.Data["OnPremPlatformAPIServerInternalIP"] = onPremPlatformAPIServerInternalIP
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["HaproxyImage"] = containerImages.HaproxyRouter
 
