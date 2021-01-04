@@ -36,10 +36,6 @@ spec:
           value: "8080"
         - name: HANDLER_NAMESPACE
           value: "cluster-hosted-net-services"
-        - name: ON_PREM_API_VIP
-          value: "192.168.111.99"
-        - name: ON_PREM_INGRESS_VIP
-          value: "192.168.111.88"
         - name: DNS_BASE_DOMAIN
           value: "test.metalkube.org"
 

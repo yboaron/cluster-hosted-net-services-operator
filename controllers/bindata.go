@@ -1,6 +1,6 @@
 // Code generated for package controllers by go-bindata DO NOT EDIT. (@generated)
 // sources:
-// ../manifests/0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml
+// ../manifests/0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml
 package controllers
 
 import (
@@ -77,22 +77,22 @@ func (fi bindataFileInfo) Sys() interface{} {
 	return nil
 }
 
-var _Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x54\x8f\xb1\x4e\x03\x31\x0c\x40\xf7\x7c\x85\x75\x7b\x8e\x76\xcd\xca\x07\xb0\xb1\x9b\xc4\x77\xb1\xc8\xd9\x51\xec\x8b\x84\x10\xff\x8e\xda\xd2\x81\xcd\x83\xed\xf7\x1e\x76\x7e\xa7\x61\xac\x92\x20\xab\x6c\xbc\xaf\xda\x49\xac\xf2\xe6\x2b\xeb\xcb\xbc\x86\x4f\x96\x92\xe0\xb5\x9d\xe6\x34\xde\x3a\x0d\x74\x1d\xe1\x20\xc7\x82\x8e\x29\x00\x08\x1e\x94\x20\x3f\x36\x62\x55\x73\x2a\x51\xc8\xa3\xd1\x98\x9c\xc9\x02\x00\x8a\xa8\xa3\xb3\x8a\xdd\x4e\x00\x58\x72\x3b\x0b\xad\x83\x1a\xa1\xd1\x7f\xac\x51\xdb\xe2\x81\x82\x3b\x95\x58\x79\xaf\x11\x27\x72\xc3\x0f\x6e\xec\x5f\x09\x16\x1f\x27\x2d\xc1\x3a\xe5\x04\xdf\x3f\xc1\x1c\xfd\xbc\x3f\x9e\x8f\x9a\xfb\x1c\xff\xcc\xf4\x29\x7d\xe3\xce\x67\xee\x72\x59\x2f\xeb\x35\x9a\x60\xb7\xaa\xbe\x84\xdf\x00\x00\x00\xff\xff\x61\x51\x03\x38\x0c\x01\x00\x00")
+var _Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x54\x8f\xb1\x4e\x03\x31\x0c\x40\xf7\x7c\x85\x75\x7b\x8e\x76\xcd\xca\x07\xb0\xb1\x9b\xc4\x77\xb1\xc8\xd9\x51\xec\x8b\x84\x10\xff\x8e\xda\xd2\x81\xcd\x83\xed\xf7\x1e\x76\x7e\xa7\x61\xac\x92\x20\xab\x6c\xbc\xaf\xda\x49\xac\xf2\xe6\x2b\xeb\xcb\xbc\x86\x4f\x96\x92\xe0\xb5\x9d\xe6\x34\xde\x3a\x0d\x74\x1d\xe1\x20\xc7\x82\x8e\x29\x00\x08\x1e\x94\x20\x3f\x36\x62\x55\x73\x2a\x51\xc8\xa3\xd1\x98\x9c\xc9\x02\x00\x8a\xa8\xa3\xb3\x8a\xdd\x4e\x00\x58\x72\x3b\x0b\xad\x83\x1a\xa1\xd1\x7f\xac\x51\xdb\xe2\x81\x82\x3b\x95\x58\x79\xaf\x11\x27\x72\xc3\x0f\x6e\xec\x5f\x09\x16\x1f\x27\x2d\xc1\x3a\xe5\x04\xdf\x3f\xc1\x1c\xfd\xbc\x3f\x9e\x8f\x9a\xfb\x1c\xff\xcc\xf4\x29\x7d\xe3\xce\x67\xee\x72\x59\x2f\xeb\x35\x9a\x60\xb7\xaa\xbe\x84\xdf\x00\x00\x00\xff\xff\x61\x51\x03\x38\x0c\x01\x00\x00")
 
-func Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYamlBytes() ([]byte, error) {
+func Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYamlBytes() ([]byte, error) {
 	return bindataRead(
-		_Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml,
-		"../manifests/0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml",
+		_Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml,
+		"../manifests/0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml",
 	)
 }
 
-func Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml() (*asset, error) {
-	bytes, err := Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYamlBytes()
+func Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml() (*asset, error) {
+	bytes, err := Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYamlBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../manifests/0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "../manifests/0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -149,7 +149,7 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"../manifests/0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml": Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml,
+	"../manifests/0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml": Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml,
 }
 
 // AssetDir returns the file names below a certain
@@ -195,7 +195,7 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"..": {nil, map[string]*bintree{
 		"manifests": {nil, map[string]*bintree{
-			"0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml": {Manifests0000_81_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml, map[string]*bintree{}},
+			"0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml": {Manifests0000_91_clusterHostedNetServicesOperator_06_clusteroperatorCrYaml, map[string]*bintree{}},
 		}},
 	}},
 }}

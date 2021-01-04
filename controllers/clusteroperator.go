@@ -1,6 +1,6 @@
 package controllers
 
-//go:generate go run -mod=vendor ../vendor/github.com/go-bindata/go-bindata/go-bindata/ -nometadata -pkg $GOPACKAGE -ignore=bindata.go  ../manifests/0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml
+//go:generate go run -mod=vendor ../vendor/github.com/go-bindata/go-bindata/go-bindata/ -nometadata -pkg $GOPACKAGE -ignore=bindata.go  ../manifests/0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml
 //go:generate gofmt -s -l -w bindata.go
 
 import (
@@ -104,7 +104,7 @@ func operandVersions(version string) []osconfigv1.OperandVersion {
 
 // createClusterOperator creates the ClusterOperator and updates its status.
 func (r *ConfigReconciler) createClusterOperator() (*osconfigv1.ClusterOperator, error) {
-	b, err := Asset("../manifests/0000_81_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml")
+	b, err := Asset("../manifests/0000_91_cluster-hosted-net-services-operator_06_clusteroperator.cr.yaml")
 	if err != nil {
 		return nil, err
 	}

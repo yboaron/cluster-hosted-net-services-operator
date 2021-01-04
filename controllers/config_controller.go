@@ -229,7 +229,7 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	err = r.syncRBAC(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying Namespace")
+		errors.Wrap(err, "failed applying RBAC")
 		return ctrl.Result{}, err
 	}
 

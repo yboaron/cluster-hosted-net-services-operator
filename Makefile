@@ -79,14 +79,16 @@ manifests: generate
 	ls $(TMP_DIR)
 
 	# now rename/join the output files into the files we expect
-	mv $(TMP_DIR)/~g_v1_namespace_*.yaml manifests/0000_81_cluster-hosted-net-services-operator_00_namespace.yaml
-	mv $(TMP_DIR)/~g_v1_serviceaccount_*.yaml manifests/0000_81_cluster-hosted-net-services-operator_03_serviceaccount.yaml
-	mv $(TMP_DIR)/apiextensions.k8s.io_v1_customresourcedefinition_configs.cluster-hosted-net-services.openshift.io.yaml  manifests/0000_81_cluster-hosted-net-services-operator_02_configs.crd.yaml
-	mv $(TMP_DIR)/apps_v1_deployment_cluster-hosted-net-services-operator.yaml  manifests/0000_81_cluster-hosted-net-services-operator_05_deployment.yaml
-	rm -f manifests/0000_81_cluster-hosted-net-services-operator_04_rbac.yaml
+	mv $(TMP_DIR)/~g_v1_namespace_*.yaml manifests/0000_91_cluster-hosted-net-services-operator_00_namespace.yaml
+	mv $(TMP_DIR)/~g_v1_serviceaccount_*.yaml manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
+	echo '---' >> manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
+	cat $(TMP_DIR)/security.openshift.io_v1_securitycontextconstraints_cluster-hosted-handler.yaml >> manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
+	mv $(TMP_DIR)/apiextensions.k8s.io_v1_customresourcedefinition_configs.cluster-hosted-net-services.openshift.io.yaml  manifests/0000_91_cluster-hosted-net-services-operator_02_configs.crd.yaml
+	mv $(TMP_DIR)/apps_v1_deployment_cluster-hosted-net-services-operator.yaml  manifests/0000_91_cluster-hosted-net-services-operator_05_deployment.yaml
+	rm -f manifests/0000_91_cluster-hosted-net-services-operator_04_rbac.yaml
 	for rbac in $(RBAC_LIST) ; do \
-	cat $(TMP_DIR)/$${rbac} >> manifests/0000_81_cluster-hosted-net-services-operator_04_rbac.yaml ;\
-	echo '---' >> manifests/0000_81_cluster-hosted-net-services-operator_04_rbac.yaml ;\
+	cat $(TMP_DIR)/$${rbac} >> manifests/0000_91_cluster-hosted-net-services-operator_04_rbac.yaml ;\
+	echo '---' >> manifests/0000_91_cluster-hosted-net-services-operator_04_rbac.yaml ;\
 	done
 	rm -rf $(TMP_DIR)
 

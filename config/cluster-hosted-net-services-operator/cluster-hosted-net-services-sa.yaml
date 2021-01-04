@@ -3,3 +3,21 @@ kind: ServiceAccount
 metadata:
   name: cluster-hosted-net-services-operator
   namespace: system
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: cluster-hosted-handler
+allowPrivilegedContainer: true
+allowHostDirVolumePlugin: true
+allowHostNetwork: true
+allowHostIPC: false
+allowHostPID: false
+allowHostPorts: false
+readOnlyRootFilesystem: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+users:
+- system:serviceaccount:cluster-hosted-net-services:cluster-hosted-handler

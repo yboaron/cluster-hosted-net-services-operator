@@ -19,7 +19,7 @@ COPY --from=builder /go/src/github.com/yboaron/cluster-hosted-net-services-opera
 COPY deploy/handler/role.yaml   /bindata/cluster-hosted/rbac/
 COPY deploy/handler/role_binding.yaml   /bindata/cluster-hosted/rbac/
 COPY deploy/handler/service_account.yaml   /bindata/cluster-hosted/rbac/
-COPY deploy/openshift/scc.yaml             /bindata/cluster-hosted/rbac/
+#COPY deploy/openshift/scc.yaml             /bindata/cluster-hosted/rbac/
 COPY deploy/handler/namespace.yaml   /bindata/cluster-hosted/namespace/
 COPY deploy/handler/keepalived/config_template.yaml   /bindata/cluster-hosted/keepalived-configmap/
 COPY deploy/handler/keepalived/daemonset.yaml   /bindata/cluster-hosted/keepalived-daemonset/
