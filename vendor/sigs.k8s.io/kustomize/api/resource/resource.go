@@ -1,18 +1,16 @@
 // Copyright 2019 The Kubernetes Authors.
 // SPDX-License-Identifier: Apache-2.0
 
+// Package resource implements representations of k8s API resources.
 package resource
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
-	"sigs.k8s.io/kustomize/api/filters/patchstrategicmerge"
 	"sigs.k8s.io/kustomize/api/ifc"
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/kustomize/kyaml/filtersutil"
 	"sigs.k8s.io/yaml"
 )
 
@@ -158,25 +156,9 @@ func (r *Resource) copyOtherFields(other *Resource) {
 	r.nameSuffixes = copyStringSlice(other.nameSuffixes)
 }
 
-func (r *Resource) ErrIfNotEquals(o *Resource) error {
-	meYaml, err := r.AsYAML()
-	if err != nil {
-		return err
-	}
-	otherYaml, err := o.AsYAML()
-	if err != nil {
-		return err
-	}
-	if !r.ReferencesEqual(o) {
-		return fmt.Errorf("references unequal")
-	}
-	if string(meYaml) != string(otherYaml) {
-		return fmt.Errorf("---  self:\n"+
-			"%s\n"+
-			"--- other:\n"+
-			"%s\n", meYaml, otherYaml)
-	}
-	return nil
+func (r *Resource) Equals(o *Resource) bool {
+	return r.ReferencesEqual(o) &&
+		reflect.DeepEqual(r.kunStr, o.kunStr)
 }
 
 func (r *Resource) ReferencesEqual(o *Resource) bool {
@@ -395,23 +377,6 @@ func (r *Resource) GetRefVarNames() []string {
 // AppendRefVarName appends a name of a var into the refVar list
 func (r *Resource) AppendRefVarName(variable types.Var) {
 	r.refVarNames = append(r.refVarNames, variable.Name)
-}
-
-// ApplySmPatch applies the provided strategic merge patch.
-func (r *Resource) ApplySmPatch(patch *Resource) error {
-	node, err := filtersutil.GetRNode(patch)
-	if err != nil {
-		return err
-	}
-	n, ns := r.GetName(), r.GetNamespace()
-	err = filtersutil.ApplyToJSON(patchstrategicmerge.Filter{
-		Patch: node,
-	}, r)
-	if !r.IsEmpty() {
-		r.SetName(n)
-		r.SetNamespace(ns)
-	}
-	return err
 }
 
 // TODO: Add BinaryData once we sync to new k8s.io/api

@@ -23,16 +23,13 @@ func NewCmdRemove(
 	kustomize edit remove resource {pattern}
 
 	# Removes one or more patches from the kustomization file
-	kustomize edit remove patch --path {filepath} --group {target group name} --version {target version}
+	kustomize edit remove patch <filepath>
 
 	# Removes one or more commonLabels from the kustomization file
 	kustomize edit remove label {labelKey1},{labelKey2}
 
 	# Removes one or more commonAnnotations from the kustomization file
 	kustomize edit remove annotation {annotationKey1},{annotationKey2}
-
-	# Removes one or more transformers from the kustomization file
-	kustomize edit remove transformer <filepath>
 `,
 		Args: cobra.MinimumNArgs(1),
 	}
@@ -41,7 +38,6 @@ func NewCmdRemove(
 		newCmdRemoveLabel(fSys, v.MakeLabelNameValidator()),
 		newCmdRemoveAnnotation(fSys, v.MakeAnnotationNameValidator()),
 		newCmdRemovePatch(fSys),
-		newCmdRemoveTransformer(fSys),
 	)
 	return c
 }

@@ -4,9 +4,7 @@
 package wrappy
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
 	"sigs.k8s.io/kustomize/api/ifc"
 	"sigs.k8s.io/kustomize/api/resid"
@@ -29,14 +27,6 @@ var _ ifc.Kunstructured = (*WNode)(nil)
 
 func NewWNode() *WNode {
 	return FromRNode(yaml.NewRNode(nil))
-}
-
-func FromMap(m map[string]interface{}) (*WNode, error) {
-	n, err := yaml.FromMap(m)
-	if err != nil {
-		return nil, err
-	}
-	return FromRNode(n), nil
 }
 
 func FromRNode(node *yaml.RNode) *WNode {
@@ -64,41 +54,10 @@ func (wn *WNode) GetAnnotations() map[string]string {
 
 // GetFieldValue implements ifc.Kunstructured.
 func (wn *WNode) GetFieldValue(path string) (interface{}, error) {
-	fields := strings.Split(path, ".")
-	rn, err := wn.node.Pipe(yaml.Lookup(fields...))
-	if err != nil {
-		return nil, err
-	}
-	if rn == nil {
-		return nil, NoFieldError{path}
-	}
-	yn := rn.YNode()
-
-	// If this is an alias node, resolve it
-	if yn.Kind == yaml.AliasNode {
-		yn = yn.Alias
-	}
-
-	// Return value as map for DocumentNode and MappingNode kinds
-	if yn.Kind == yaml.DocumentNode || yn.Kind == yaml.MappingNode {
-		var result map[string]interface{}
-		if err := yn.Decode(&result); err != nil {
-			return nil, err
-		}
-		return result, err
-	}
-
-	// Return value as slice for SequenceNode kind
-	if yn.Kind == yaml.SequenceNode {
-		var result []interface{}
-		for _, node := range yn.Content {
-			result = append(result, node.Value)
-		}
-		return result, nil
-	}
-
-	// Return value value directly for all other (ScalarNode) kinds
-	return yn.Value, nil
+	// The argument is a json path, e.g. "metadata.name"
+	// fields := strings.Split(path, ".")
+	// return wn.node.Pipe(yaml.Lookup(fields...))
+	panic("TODO(#WNode): GetFieldValue; implement or drop from API")
 }
 
 // GetGvk implements ifc.Kunstructured.
@@ -124,37 +83,18 @@ func (wn *WNode) GetName() string {
 }
 
 // GetSlice implements ifc.Kunstructured.
-func (wn *WNode) GetSlice(path string) ([]interface{}, error) {
-	value, err := wn.GetFieldValue(path)
-	if err != nil {
-		return nil, err
-	}
-	if sliceValue, ok := value.([]interface{}); ok {
-		return sliceValue, nil
-	}
-	return nil, fmt.Errorf("node %s is not a slice", path)
+func (wn *WNode) GetSlice(string) ([]interface{}, error) {
+	panic("TODO(#WNode) GetSlice; implement or drop from API")
 }
 
 // GetSlice implements ifc.Kunstructured.
-func (wn *WNode) GetString(path string) (string, error) {
-	value, err := wn.GetFieldValue(path)
-	if err != nil {
-		return "", err
-	}
-	if v, ok := value.(string); ok {
-		return v, nil
-	}
-	return "", fmt.Errorf("node %s is not a string: %v", path, value)
+func (wn *WNode) GetString(string) (string, error) {
+	panic("TODO(#WNode) GetString; implement or drop from API")
 }
 
 // Map implements ifc.Kunstructured.
 func (wn *WNode) Map() map[string]interface{} {
-	var result map[string]interface{}
-	if err := wn.node.YNode().Decode(&result); err != nil {
-		// Log and die since interface doesn't allow error.
-		log.Fatalf("failed to decode ynode: %v", err)
-	}
-	return result
+	panic("TODO(#WNode) Map; implement or drop from API")
 }
 
 // MarshalJSON implements ifc.Kunstructured.
@@ -163,65 +103,41 @@ func (wn *WNode) MarshalJSON() ([]byte, error) {
 }
 
 // MatchesAnnotationSelector implements ifc.Kunstructured.
-func (wn *WNode) MatchesAnnotationSelector(selector string) (bool, error) {
-	return wn.node.MatchesAnnotationSelector(selector)
+func (wn *WNode) MatchesAnnotationSelector(string) (bool, error) {
+	panic("TODO(#WNode) MatchesAnnotationSelector; implement or drop from API")
 }
 
 // MatchesLabelSelector implements ifc.Kunstructured.
-func (wn *WNode) MatchesLabelSelector(selector string) (bool, error) {
-	return wn.node.MatchesLabelSelector(selector)
+func (wn *WNode) MatchesLabelSelector(string) (bool, error) {
+	panic("TODO(#WNode) MatchesLabelSelector; implement or drop from API")
 }
 
 // SetAnnotations implements ifc.Kunstructured.
-func (wn *WNode) SetAnnotations(annotations map[string]string) {
-	if err := wn.node.SetAnnotations(annotations); err != nil {
-		log.Fatal(err) // interface doesn't allow error.
-	}
+func (wn *WNode) SetAnnotations(map[string]string) {
+	panic("TODO(#WNode) SetAnnotations; implement or drop from API")
 }
 
 // SetGvk implements ifc.Kunstructured.
-func (wn *WNode) SetGvk(gvk resid.Gvk) {
-	wn.setMapField(yaml.NewScalarRNode(gvk.Kind), yaml.KindField)
-	wn.setMapField(
-		yaml.NewScalarRNode(
-			fmt.Sprintf("%s/%s", gvk.Group, gvk.Version)), yaml.APIVersionField)
+func (wn *WNode) SetGvk(resid.Gvk) {
+	panic("TODO(#WNode) SetGvk; implement or drop from API")
 }
 
 // SetLabels implements ifc.Kunstructured.
-func (wn *WNode) SetLabels(labels map[string]string) {
-	if err := wn.node.SetLabels(labels); err != nil {
-		log.Fatal(err) // interface doesn't allow error.
-	}
+func (wn *WNode) SetLabels(map[string]string) {
+	panic("TODO(#WNode) SetLabels; implement or drop from API")
 }
 
 // SetName implements ifc.Kunstructured.
-func (wn *WNode) SetName(name string) {
-	wn.setMapField(yaml.NewScalarRNode(name), yaml.MetadataField, yaml.NameField)
+func (wn *WNode) SetName(string) {
+	panic("TODO(#WNode) SetName; implement or drop from API")
 }
 
 // SetNamespace implements ifc.Kunstructured.
-func (wn *WNode) SetNamespace(ns string) {
-	if err := wn.node.SetNamespace(ns); err != nil {
-		log.Fatal(err) // interface doesn't allow error.
-	}
-}
-
-func (wn *WNode) setMapField(value *yaml.RNode, path ...string) {
-	if err := wn.node.SetMapField(value, path...); err != nil {
-		// Log and die since interface doesn't allow error.
-		log.Fatalf("failed to set field %v: %v", path, err)
-	}
+func (wn *WNode) SetNamespace(string) {
+	panic("TODO(#WNode) SetNamespace; implement or drop from API")
 }
 
 // UnmarshalJSON implements ifc.Kunstructured.
 func (wn *WNode) UnmarshalJSON(data []byte) error {
 	return wn.node.UnmarshalJSON(data)
-}
-
-type NoFieldError struct {
-	Field string
-}
-
-func (e NoFieldError) Error() string {
-	return fmt.Sprintf("no field named '%s'", e.Field)
 }

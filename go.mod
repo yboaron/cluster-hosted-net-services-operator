@@ -22,4 +22,8 @@ require (
 	sigs.k8s.io/kustomize/kustomize/v3 v3.9.0
 )
 
-replace github.com/openshift/cluster-network-operator => github.com/openshift/cluster-network-operator v0.0.0-20201105033330-1ee0aaf1bdb8
+replace (
+	github.com/openshift/cluster-network-operator => github.com/openshift/cluster-network-operator v0.0.0-20201105033330-1ee0aaf1bdb8
+
+	sigs.k8s.io/kustomize/kustomize/v3 => sigs.k8s.io/kustomize/kustomize/v3 v3.8.5
+)

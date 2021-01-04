@@ -11,9 +11,9 @@ import (
 	pLdr "sigs.k8s.io/kustomize/api/internal/plugins/loader"
 	"sigs.k8s.io/kustomize/api/internal/target"
 	"sigs.k8s.io/kustomize/api/konfig"
+	"sigs.k8s.io/kustomize/api/krusty/internal/provider"
 	fLdr "sigs.k8s.io/kustomize/api/loader"
 	"sigs.k8s.io/kustomize/api/provenance"
-	"sigs.k8s.io/kustomize/api/provider"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/types"
 )
@@ -53,7 +53,7 @@ func MakeKustomizer(fSys filesys.FileSystem, o *Options) *Kustomizer {
 func (b *Kustomizer) Run(path string) (resmap.ResMap, error) {
 	resmapFactory := resmap.NewFactory(
 		b.depProvider.GetResourceFactory(),
-		b.depProvider.GetConflictDetectorFactory())
+		b.depProvider.GetMerginator())
 	lr := fLdr.RestrictionNone
 	if b.options.LoadRestrictions == types.LoadRestrictionsRootOnly {
 		lr = fLdr.RestrictionRootOnly
@@ -85,7 +85,7 @@ func (b *Kustomizer) Run(path string) (resmap.ResMap, error) {
 		t := builtins.LabelTransformerPlugin{
 			Labels: map[string]string{
 				konfig.ManagedbyLabelKey: fmt.Sprintf(
-					"kustomize-%s", provenance.GetProvenance().Semver())},
+					"kustomize-%s", provenance.GetProvenance().Version)},
 			FieldSpecs: []types.FieldSpec{{
 				Path:               "metadata/labels",
 				CreateIfNotPresent: true,

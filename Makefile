@@ -1,30 +1,20 @@
-CLUSTER_CLIENT ?= oc
-# Current Operator version
-VERSION ?= 0.0.1
-# Default bundle image tag
-BUNDLE_IMG ?= controller-bundle:$(VERSION)
-# Options for 'bundle-build'
-ifneq ($(origin CHANNELS), undefined)
-BUNDLE_CHANNELS := --channels=$(CHANNELS)
+ifeq (/,${HOME})
+GOLANGCI_LINT_CACHE=/tmp/golangci-lint-cache/
+else
+GOLANGCI_LINT_CACHE=${HOME}/.cache/golangci-lint
 endif
-ifneq ($(origin DEFAULT_CHANNEL), undefined)
-BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
-endif
-BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
+CLUSTER_CLIENT ?= oc
+CONTROLLER_GEN ?= go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go
+KUSTOMIZE ?= go run sigs.k8s.io/kustomize/kustomize/v3
 CRD_OPTIONS="crd:trivialVersions=true,crdVersions=v1"
+GOLANGCI_LINT ?= GOLANGCI_LINT_CACHE=$(GOLANGCI_LINT_CACHE) go run vendor/github.com/golangci/golangci-lint/cmd/golangci-lint/main.go
 MANIFEST_PROFILE ?= default
 TMP_DIR := $(shell mktemp -d -t manifests-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+IMAGE_BUILDER ?= podman
 
 # Image URL to use all building/pushing image targets
 IMG ?= quay.io/yboaron/cluster-hosted-net-services-operator:latest
-
-# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
-else
-GOBIN=$(shell go env GOBIN)
-endif
 
 all: manager
 
@@ -79,8 +69,8 @@ manifests: generate
 	ls $(TMP_DIR)
 
 	# now rename/join the output files into the files we expect
-	mv $(TMP_DIR)/~g_v1_namespace_*.yaml manifests/0000_91_cluster-hosted-net-services-operator_00_namespace.yaml
-	mv $(TMP_DIR)/~g_v1_serviceaccount_*.yaml manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
+	mv $(TMP_DIR)/v1_namespace_cluster-hosted-net-services-operator.yaml manifests/0000_91_cluster-hosted-net-services-operator_00_namespace.yaml
+	mv $(TMP_DIR)/v1_serviceaccount_cluster-hosted-net-services-operator.yaml manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
 	echo '---' >> manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
 	cat $(TMP_DIR)/security.openshift.io_v1_securitycontextconstraints_cluster-hosted-handler.yaml >> manifests/0000_91_cluster-hosted-net-services-operator_03_serviceaccount.yaml
 	mv $(TMP_DIR)/apiextensions.k8s.io_v1_customresourcedefinition_configs.cluster-hosted-net-services.openshift.io.yaml  manifests/0000_91_cluster-hosted-net-services-operator_02_configs.crd.yaml
@@ -93,69 +83,26 @@ manifests: generate
 	rm -rf $(TMP_DIR)
 
 # Generate code
-generate: controller-gen
+generate: 
 		go generate -x ./...
 		$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=cluster-hosted-net-services-operator webhook paths=./... output:crd:artifacts:config=config/crd/bases
 		sed -i '/^    controller-gen.kubebuilder.io\/version: (devel)/d' config/crd/bases/*
 		$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
-
-
+		#$(GOLANGCI_LINT) run --fix
 
 # Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
+image-build: test
+	$(IMAGE_BUILDER) build . -t ${IMG}
 
-podman-build: 
-	podman  build . -t ${IMG}
+image-push: 
+	$(IMAGE_BUILDER)  push  ${IMG} 
 
-podman-push: 
-	podman  push  ${IMG} 
+# Run go lint against code
+.PHONY: lint
+lint:
+	$(GOLANGCI_LINT) run
 
-# Push the docker image
-docker-push:
-	docker push ${IMG}
-
-# find or download controller-gen
-# download controller-gen if necessary
-controller-gen:
-ifeq (, $(shell which controller-gen))
-	@{ \
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.3.0 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
-	}
-CONTROLLER_GEN=$(GOBIN)/controller-gen
-else
-CONTROLLER_GEN=$(shell which controller-gen)
-endif
-
-kustomize:
-ifeq (, $(shell which kustomize))
-	@{ \
-	set -e ;\
-	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4 ;\
-	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
-	}
-KUSTOMIZE=$(GOBIN)/kustomize
-else
-KUSTOMIZE=$(shell which kustomize)
-endif
-
-# Generate bundle manifests and metadata, then validate generated files.
-.PHONY: bundle
-bundle: manifests
-	operator-sdk generate kustomize manifests -q
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
-	operator-sdk bundle validate ./bundle
-
-# Build the bundle image.
-.PHONY: bundle-build
-bundle-build:
-	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+vendor: 
+	go mod tidy
+	go mod vendor
+	go mod verify

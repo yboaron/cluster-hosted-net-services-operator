@@ -6,7 +6,6 @@ package resid
 import (
 	"strings"
 
-	"sigs.k8s.io/kustomize/kyaml/openapi"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
@@ -208,6 +207,5 @@ func (x Gvk) toKyamlTypeMeta() yaml.TypeMeta {
 // IsNamespaceableKind returns true if x is a namespaceable Gvk
 // Implements https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#not-all-objects-are-in-a-namespace
 func (x Gvk) IsNamespaceableKind() bool {
-	isNamespaceScoped, found := openapi.IsNamespaceScoped(x.toKyamlTypeMeta())
-	return !found || isNamespaceScoped
+	return x.toKyamlTypeMeta().IsNamespaceable()
 }

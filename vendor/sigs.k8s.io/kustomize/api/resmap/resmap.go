@@ -10,7 +10,6 @@ import (
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 // A Transformer modifies an instance of ResMap.
@@ -236,13 +235,4 @@ type ResMap interface {
 	// Select returns a list of resources that
 	// are selected by a Selector
 	Select(types.Selector) ([]*resource.Resource, error)
-
-	// ToRNodeSlice converts the resources in the resmp
-	// to a list of RNodes
-	ToRNodeSlice() ([]*yaml.RNode, error)
-
-	// ApplySmPatch applies a strategic-merge patch to the
-	// selected set of resources.
-	ApplySmPatch(
-		selectedSet *resource.IdSet, patch *resource.Resource) error
 }

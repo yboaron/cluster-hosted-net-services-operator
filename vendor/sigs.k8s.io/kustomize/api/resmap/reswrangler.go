@@ -6,13 +6,12 @@ package resmap
 import (
 	"bytes"
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/pkg/errors"
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/resource"
 	"sigs.k8s.io/kustomize/api/types"
-	kyaml_yaml "sigs.k8s.io/kustomize/kyaml/yaml"
 	"sigs.k8s.io/yaml"
 )
 
@@ -340,8 +339,10 @@ func (m *resWrangler) ErrorIfNotEqualLists(other ResMap) error {
 	}
 	for i, r1 := range m.rList {
 		r2 := m2.rList[i]
-		if err := r1.ErrIfNotEquals(r2); err != nil {
-			return err
+		if !r1.Equals(r2) {
+			return fmt.Errorf(
+				"Item i=%d differs:\n  n1 = %s\n  n2 = %s\n  o1 = %s\n  o2 = %s\n",
+				i, r1.OrgId(), r2.OrgId(), r1, r2)
 		}
 	}
 	return nil
@@ -509,34 +510,51 @@ func (m *resWrangler) appendReplaceOrMerge(
 	return nil
 }
 
+func anchorRegex(pattern string) string {
+	if pattern == "" {
+		return pattern
+	}
+	return "^" + pattern + "$"
+}
+
 // Select returns a list of resources that
 // are selected by a Selector
 func (m *resWrangler) Select(s types.Selector) ([]*resource.Resource, error) {
+	ns := regexp.MustCompile(anchorRegex(s.Namespace))
+	nm := regexp.MustCompile(anchorRegex(s.Name))
 	var result []*resource.Resource
-	sr, err := types.NewSelectorRegex(&s)
-	if err != nil {
-		return nil, err
-	}
 	for _, r := range m.Resources() {
 		curId := r.CurId()
 		orgId := r.OrgId()
 
+		// matches the namespace when namespace is not empty in the selector
 		// It first tries to match with the original namespace
 		// then matches with the current namespace
-		if !sr.MatchNamespace(orgId.EffectiveNamespace()) &&
-			!sr.MatchNamespace(curId.EffectiveNamespace()) {
-			continue
+		if s.Namespace != "" {
+			matched := ns.MatchString(orgId.EffectiveNamespace())
+			if !matched {
+				matched = ns.MatchString(curId.EffectiveNamespace())
+				if !matched {
+					continue
+				}
+			}
 		}
 
+		// matches the name when name is not empty in the selector
 		// It first tries to match with the original name
 		// then matches with the current name
-		if !sr.MatchName(orgId.Name) &&
-			!sr.MatchName(curId.Name) {
-			continue
+		if s.Name != "" {
+			matched := nm.MatchString(orgId.Name)
+			if !matched {
+				matched = nm.MatchString(curId.Name)
+				if !matched {
+					continue
+				}
+			}
 		}
 
 		// matches the GVK
-		if !sr.MatchGvk(r.GetGvk()) {
+		if !r.GetGvk().IsSelected(&s.Gvk) {
 			continue
 		}
 
@@ -560,65 +578,4 @@ func (m *resWrangler) Select(s types.Selector) ([]*resource.Resource, error) {
 		result = append(result, r)
 	}
 	return result, nil
-}
-
-// ToRNodeSlice converts the resources in the resmp
-// to a list of RNodes
-func (m *resWrangler) ToRNodeSlice() ([]*kyaml_yaml.RNode, error) {
-	var rnodes []*kyaml_yaml.RNode
-	for _, r := range m.Resources() {
-		s, err := r.AsYAML()
-		if err != nil {
-			return nil, err
-		}
-		rnode, err := kyaml_yaml.Parse(string(s))
-		if err != nil {
-			return nil, err
-		}
-		rnodes = append(rnodes, rnode)
-	}
-	return rnodes, nil
-}
-
-func (m *resWrangler) ApplySmPatch(
-	selectedSet *resource.IdSet, patch *resource.Resource) error {
-	newRm := New()
-	for _, res := range m.Resources() {
-		if !selectedSet.Contains(res.CurId()) {
-			newRm.Append(res)
-			continue
-		}
-		patchCopy := patch.DeepCopy()
-		patchCopy.SetName(res.GetName())
-		patchCopy.SetNamespace(res.GetNamespace())
-		patchCopy.SetGvk(res.GetGvk())
-		err := res.ApplySmPatch(patchCopy)
-		if err != nil {
-			// Check for an error string from UnmarshalJSON that's indicative
-			// of an object that's missing basic KRM fields, and thus may have been
-			// entirely deleted (an acceptable outcome).  This error handling should
-			// be deleted along with use of ResMap and apimachinery functions like
-			// UnmarshalJSON.
-			if !strings.Contains(err.Error(), "Object 'Kind' is missing") {
-				// Some unknown error, let it through.
-				return err
-			}
-			if !res.IsEmpty() {
-				return errors.Wrapf(
-					err, "with unexpectedly non-empty object map of size %d",
-					len(res.Map()))
-			}
-			// Fall through to handle deleted object.
-		}
-		if !res.IsEmpty() {
-			// IsEmpty means all fields have been removed from the object.
-			// This can happen if a patch required deletion of the
-			// entire resource (not just a part of it).  This means
-			// the overall resmap must shrink by one.
-			newRm.Append(res)
-		}
-	}
-	m.Clear()
-	m.AppendAll(newRm)
-	return nil
 }

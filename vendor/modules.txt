@@ -221,7 +221,7 @@ github.com/gostaticanalysis/comment/passes/commentmap
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-cleanhttp v0.5.1
 github.com/hashicorp/go-cleanhttp
-# github.com/hashicorp/go-multierror v1.1.0
+# github.com/hashicorp/go-multierror v1.0.0
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-safetemp v1.0.0
 github.com/hashicorp/go-safetemp
@@ -380,6 +380,14 @@ github.com/pkg/errors
 github.com/pmezard/go-difflib/difflib
 # github.com/polyfloyd/go-errorlint v0.0.0-20201006195004-351e25ade6e3
 github.com/polyfloyd/go-errorlint/errorlint
+# github.com/posener/complete/v2 v2.0.1-alpha.12
+github.com/posener/complete/v2
+github.com/posener/complete/v2/install
+github.com/posener/complete/v2/internal/arg
+github.com/posener/complete/v2/internal/tokener
+github.com/posener/complete/v2/predict
+# github.com/posener/script v1.0.4
+github.com/posener/script
 # github.com/prometheus/client_golang v1.7.1
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -454,7 +462,7 @@ github.com/tomarrell/wrapcheck/wrapcheck
 github.com/tommy-muehle/go-mnd
 github.com/tommy-muehle/go-mnd/checks
 github.com/tommy-muehle/go-mnd/config
-# github.com/ulikunitz/xz v0.5.8
+# github.com/ulikunitz/xz v0.5.5
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
@@ -467,7 +475,7 @@ github.com/ultraware/whitespace
 github.com/uudashr/gocognit
 # github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 github.com/xlab/treeprint
-# github.com/yujunz/go-getter v1.5.1-lite.0.20201201013212-6d9c071adddf
+# github.com/yujunz/go-getter v1.4.1-lite
 github.com/yujunz/go-getter
 github.com/yujunz/go-getter/helper/url
 # go.mongodb.org/mongo-driver v1.1.2
@@ -956,7 +964,7 @@ sigs.k8s.io/controller-tools/pkg/schemapatcher
 sigs.k8s.io/controller-tools/pkg/schemapatcher/internal/yaml
 sigs.k8s.io/controller-tools/pkg/version
 sigs.k8s.io/controller-tools/pkg/webhook
-# sigs.k8s.io/kustomize/api v0.7.0
+# sigs.k8s.io/kustomize/api v0.6.3
 sigs.k8s.io/kustomize/api/builtins
 sigs.k8s.io/kustomize/api/filesys
 sigs.k8s.io/kustomize/api/filters/annotations
@@ -978,12 +986,11 @@ sigs.k8s.io/kustomize/api/ifc
 sigs.k8s.io/kustomize/api/image
 sigs.k8s.io/kustomize/api/internal/accumulator
 sigs.k8s.io/kustomize/api/internal/accumulator/expansion
-sigs.k8s.io/kustomize/api/internal/conflict
-sigs.k8s.io/kustomize/api/internal/generators
 sigs.k8s.io/kustomize/api/internal/git
 sigs.k8s.io/kustomize/api/internal/k8sdeps/configmapandsecret
-sigs.k8s.io/kustomize/api/internal/k8sdeps/conflict
+sigs.k8s.io/kustomize/api/internal/k8sdeps/merge
 sigs.k8s.io/kustomize/api/internal/kusterr
+sigs.k8s.io/kustomize/api/internal/merge
 sigs.k8s.io/kustomize/api/internal/plugins/builtinconfig
 sigs.k8s.io/kustomize/api/internal/plugins/builtinhelpers
 sigs.k8s.io/kustomize/api/internal/plugins/execplugin
@@ -998,24 +1005,23 @@ sigs.k8s.io/kustomize/api/k8sdeps/validator
 sigs.k8s.io/kustomize/api/konfig
 sigs.k8s.io/kustomize/api/konfig/builtinpluginconsts
 sigs.k8s.io/kustomize/api/krusty
+sigs.k8s.io/kustomize/api/krusty/internal/provider
 sigs.k8s.io/kustomize/api/kv
 sigs.k8s.io/kustomize/api/loader
 sigs.k8s.io/kustomize/api/provenance
-sigs.k8s.io/kustomize/api/provider
 sigs.k8s.io/kustomize/api/resid
 sigs.k8s.io/kustomize/api/resmap
 sigs.k8s.io/kustomize/api/resource
 sigs.k8s.io/kustomize/api/types
-# sigs.k8s.io/kustomize/cmd/config v0.8.6
-sigs.k8s.io/kustomize/cmd/config/completion
+# sigs.k8s.io/kustomize/cmd/config v0.8.2
+sigs.k8s.io/kustomize/cmd/config/complete
 sigs.k8s.io/kustomize/cmd/config/configcobra
 sigs.k8s.io/kustomize/cmd/config/ext
 sigs.k8s.io/kustomize/cmd/config/internal/commands
 sigs.k8s.io/kustomize/cmd/config/internal/generateddocs/api
 sigs.k8s.io/kustomize/cmd/config/internal/generateddocs/commands
 sigs.k8s.io/kustomize/cmd/config/internal/generateddocs/tutorials
-sigs.k8s.io/kustomize/cmd/config/runner
-# sigs.k8s.io/kustomize/kustomize/v3 v3.9.0
+# sigs.k8s.io/kustomize/kustomize/v3 v3.9.0 => sigs.k8s.io/kustomize/kustomize/v3 v3.8.5
 sigs.k8s.io/kustomize/kustomize/v3
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/build
@@ -1023,15 +1029,13 @@ sigs.k8s.io/kustomize/kustomize/v3/internal/commands/create
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit/add
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit/fix
-sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit/listbuiltin
+sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit/patch
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit/remove
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/edit/set
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/kustfile
-sigs.k8s.io/kustomize/kustomize/v3/internal/commands/openapi
-sigs.k8s.io/kustomize/kustomize/v3/internal/commands/openapi/info
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/util
 sigs.k8s.io/kustomize/kustomize/v3/internal/commands/version
-# sigs.k8s.io/kustomize/kyaml v0.10.3
+# sigs.k8s.io/kustomize/kyaml v0.9.1
 sigs.k8s.io/kustomize/kyaml/comments
 sigs.k8s.io/kustomize/kyaml/errors
 sigs.k8s.io/kustomize/kyaml/ext
@@ -1047,24 +1051,14 @@ sigs.k8s.io/kustomize/kyaml/kio/kioutil
 sigs.k8s.io/kustomize/kyaml/krmfile
 sigs.k8s.io/kustomize/kyaml/openapi
 sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi
-sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi/v1184
-sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi/v1186
-sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi/v1188
-sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi/v1190
-sigs.k8s.io/kustomize/kyaml/openapi/kubernetesapi/v1191
 sigs.k8s.io/kustomize/kyaml/openapi/kustomizationapi
 sigs.k8s.io/kustomize/kyaml/pathutil
 sigs.k8s.io/kustomize/kyaml/runfn
 sigs.k8s.io/kustomize/kyaml/sets
+sigs.k8s.io/kustomize/kyaml/setters
 sigs.k8s.io/kustomize/kyaml/setters2
 sigs.k8s.io/kustomize/kyaml/setters2/settersutil
 sigs.k8s.io/kustomize/kyaml/yaml
-sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/labels
-sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/selection
-sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/util/errors
-sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/util/sets
-sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/util/validation
-sigs.k8s.io/kustomize/kyaml/yaml/internal/k8sgen/pkg/util/validation/field
 sigs.k8s.io/kustomize/kyaml/yaml/merge2
 sigs.k8s.io/kustomize/kyaml/yaml/merge3
 sigs.k8s.io/kustomize/kyaml/yaml/schema
