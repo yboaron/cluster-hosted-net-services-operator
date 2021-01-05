@@ -8,35 +8,35 @@ data:
     . {
         errors
         health :18080
-        mdns {{ .DnsBaseDomain }} 0 {{`{{.Cluster.Name}}`}} {{`{{.NonVirtualIP}}`}}
+        mdns {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} 0 {{`{{.Cluster.Name}}`}} {{`{{.NonVirtualIP}}`}}
         forward . {{`{{- range $upstream := .DNSUpstreams}} {{$upstream}}{{- end}}`}}
         cache 30
         reload
-        template IN {{`{{ .Cluster.IngressVIPRecordType }}`}} {{ .DnsBaseDomain }} {
-            match .*.apps.{{ .DnsBaseDomain }}
+        template IN {{`{{ .Cluster.IngressVIPRecordType }}`}} {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} {
+            match .*.apps.{{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}}
             answer "{{`{{"{{ .Name }}"}}`}} 60 in {{`{{"{{ .Type }}"}}`}} {{ .OnPremPlatformIngressIP }}"
             fallthrough
         }
-        template IN {{`{{ .Cluster.IngressVIPEmptyType }}`}} {{ .DnsBaseDomain }} {
-            match .*.apps.{{ .DnsBaseDomain }}
+        template IN {{`{{ .Cluster.IngressVIPEmptyType }}`}} {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} {
+            match .*.apps.{{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}}
             fallthrough
         }
-        template IN {{`{{ .Cluster.APIVIPRecordType }}`}} {{ .DnsBaseDomain }} {
-            match api.{{ .DnsBaseDomain }}
+        template IN {{`{{ .Cluster.APIVIPRecordType }}`}} {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} {
+            match api.{{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}}
             answer "{{`{{"{{ .Name }}"}}`}} 60 in {{`{{"{{ .Type }}"}}`}} {{ .OnPremPlatformAPIServerInternalIP }}"
             fallthrough
         }
-        template IN {{`{{ .Cluster.APIVIPEmptyType }}`}} {{ .DnsBaseDomain }} {
-            match api.{{ .DnsBaseDomain }}
+        template IN {{`{{ .Cluster.APIVIPEmptyType }}`}} {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} {
+            match api.{{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}}
             fallthrough
         }
-        template IN {{`{{ .Cluster.APIVIPRecordType }}`}} {{ .DnsBaseDomain }} {
-            match api-int.{{ .DnsBaseDomain }}
+        template IN {{`{{ .Cluster.APIVIPRecordType }}`}} {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} {
+            match api-int.{{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}}
             answer "{{`{{"{{ .Name }}"}}`}} 60 in {{`{{"{{ .Type }}"}}`}} {{ .OnPremPlatformAPIServerInternalIP }}"
             fallthrough
         }
-        template IN {{`{{ .Cluster.APIVIPEmptyType }}`}} {{ .DnsBaseDomain }} {
-            match api-int.{{ .DnsBaseDomain }}
+        template IN {{`{{ .Cluster.APIVIPEmptyType }}`}} {{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}} {
+            match api-int.{{`{{.Cluster.Name}}`}}.{{`{{.Cluster.Domain}}`}}
             fallthrough
         }
     }

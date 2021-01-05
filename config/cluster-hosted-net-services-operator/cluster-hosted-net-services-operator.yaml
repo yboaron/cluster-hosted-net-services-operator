@@ -36,9 +36,6 @@ spec:
           value: "8080"
         - name: HANDLER_NAMESPACE
           value: "cluster-hosted-net-services"
-        - name: DNS_BASE_DOMAIN
-          value: "test.metalkube.org"
-
         resources:
           requests:
             cpu: 10m

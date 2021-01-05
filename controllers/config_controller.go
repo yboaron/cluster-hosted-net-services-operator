@@ -306,7 +306,6 @@ func (r *ConfigReconciler) syncCoreDNS(instance *clusterhostednetservicesopenshi
 	data.Data["OnPremPlatformIngressIP"] = onPremPlatformIngressIP
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["CorednsImage"] = containerImages.Coredns
-	data.Data["DnsBaseDomain"] = os.Getenv("DNS_BASE_DOMAIN")
 
 	err := r.renderAndApply(instance, data, "coredns-configmap")
 	if err != nil {

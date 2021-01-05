@@ -35,8 +35,6 @@ spec:
           value: "8080"
         - name: HANDLER_NAMESPACE
           value: cluster-hosted-net-services
-        - name: DNS_BASE_DOMAIN
-          value: test.metalkube.org
         image: quay.io/yboaron/cluster-hosted-net-services-operator:latest
         name: cluster-hosted-net-services-operator
         resources:
