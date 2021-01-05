@@ -40,8 +40,4 @@ data:
     {{`{{- range .LBConfig.Backends }}
        server {{ .Host }} {{ .Address }}:{{ .Port }} weight 1 verify none check check-ssl inter 1s fall 2 rise 3
     {{- end }}`}}
-    global_defs {
-        enable_script_security
-        script_user root
-    }
 
