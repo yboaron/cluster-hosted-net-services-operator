@@ -1,7 +1,7 @@
 package names
 
-// ManifestDir is the directory where manifests are located.
-var ManifestDir = "./bindata"
+// ManifestDir is the directory where handler manifests are located.
+var HandlerManifestDir = "./bindata"
 
 // ClusterHostedConfigName is the name of the CR that the operator will reconcile
 const (

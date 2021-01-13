@@ -78,10 +78,9 @@ func relatedObjects() []osconfigv1.ObjectReference {
 			Name:     componentNamespace,
 		},
 		{
-			Group:     "clusterstack.openshift.io",
-			Resource:  "configs",
-			Name:      "configs.clusterstack.openshift.io",
-			Namespace: componentNamespace,
+			Group:    "cluster-hosted-net-services.openshift.io",
+			Resource: "config",
+			Name:     "",
 		},
 		// TODO, add the operand namespace if needed
 	}

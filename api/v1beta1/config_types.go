@@ -49,6 +49,7 @@ type ConfigStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:path=configs,scope=Namespaced
 // +kubebuilder:subresource:status
 
 // Config is the Schema for the configs API

@@ -36,6 +36,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yboaron/cluster-hosted-net-services-operator/pkg/images"
+	"github.com/yboaron/cluster-hosted-net-services-operator/pkg/names"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -191,31 +192,15 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			// Images config map is not valid
 			// Requeue request.
 			r.Log.Error(err, "invalid contents in images Config Map")
-			/*
-				co_err := r.updateCOStatus(ReasonInvalidConfiguration, err.Error(), "invalid contents in images Config Map")
-				if co_err != nil {
-					return ctrl.Result{}, fmt.Errorf("unable to put %q ClusterOperator in Degraded state: %v", clusterOperatorName, co_err)
-				} */
+			co_err := r.updateCOStatus(ReasonInvalidConfiguration, err.Error(), "invalid contents in images Config Map")
+			if co_err != nil {
+				return ctrl.Result{}, fmt.Errorf("unable to put %q ClusterOperator in Degraded state: %v", clusterOperatorName, co_err)
+			}
 			return ctrl.Result{}, err
 		}
 	}
-	/*
-		err = r.ensureClusterOperator(instance)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-	*/
+
 	// TODO customize this code to check of handler resources already created
-	/*
-		if exists {
-			r.Log.V(1).Info("metal3 deployment already exists")
-			err = r.updateCOStatus(ReasonComplete, "found existing Metal3 deployment", "")
-			if err != nil {
-				return ctrl.Result{}, fmt.Errorf("unable to put %q ClusterOperator in Available state: %v", clusterOperatorName, err)
-			}
-			return ctrl.Result{}, nil
-		}
-	*/
 	err = r.updateCOStatus(ReasonSyncing, "", "Applying Cluster hosted net services resources")
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("unable to put %q ClusterOperator in Syncing state: %v", clusterOperatorName, err)
@@ -223,38 +208,32 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	err = r.syncNamespace(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying Namespace")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, "failed applying Namespace")
 	}
 
 	err = r.syncRBAC(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying RBAC")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, "failed applying RBAC")
 	}
 
 	err = r.syncKeepalived(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying Keepalived")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, "failed applying Keepalived")
 	}
 
 	err = r.syncHaproxy(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying Haproxy")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, "failed applying Haproxy")
 	}
 
 	err = r.syncMDNS(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying MDNS")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, "failed applying MDNS")
 	}
 
 	err = r.syncCoreDNS(instance)
 	if err != nil {
-		errors.Wrap(err, "failed applying CoreDNS")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, "failed applying CoreDNS")
 	}
 
 	err = r.updateCOStatus(ReasonComplete, "Applying Cluster hosted net services resources completed", "")
@@ -316,8 +295,8 @@ func (r *ConfigReconciler) syncCoreDNS(instance *clusterhostednetservicesopenshi
 }
 
 func (r *ConfigReconciler) syncMDNS(instance *clusterhostednetservicesopenshiftiov1beta1.Config) error {
+	var err error
 
-	// TODO:  add here code to check if MDNS resources already exist
 	data := render.MakeRenderData()
 	data.Data["HandlerNamespace"] = os.Getenv("HANDLER_NAMESPACE")
 	data.Data["OnPremPlatformAPIServerInternalIP"] = onPremPlatformAPIServerInternalIP
@@ -325,29 +304,55 @@ func (r *ConfigReconciler) syncMDNS(instance *clusterhostednetservicesopenshifti
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["MdnsPublisherImage"] = containerImages.MdnsPublisher
 
-	err := r.renderAndApply(instance, data, "mdns-configmap")
-	if err != nil {
-		errors.Wrap(err, "failed applying Mdns-configmap ")
-		return err
+	if instance.Spec.DNS.NodesResolution == "Enable" {
+		r.Log.Info("Create mDNS resources")
+		err = r.renderAndApply(instance, data, "mdns-configmap")
+		if err != nil {
+			errors.Wrap(err, "failed applying mdns-configmap ")
+			return err
+		}
+		err = r.renderAndApply(instance, data, "mdns-daemonset")
+	} else {
+		r.Log.Info("Delete mDNS resources")
+		err = r.renderAndDelete(instance, data, "mdns-daemonset")
+		if err != nil {
+			errors.Wrap(err, "failed Deleting mdns-configmap ")
+			return err
+		}
+		err = r.renderAndDelete(instance, data, "mdns-configmap")
 	}
-	return r.renderAndApply(instance, data, "mdns-daemonset")
+	return err
+
 }
 
 func (r *ConfigReconciler) syncHaproxy(instance *clusterhostednetservicesopenshiftiov1beta1.Config) error {
+	var err error
 
-	// TODO:  add here code to check if HAProxy resources already exist
 	data := render.MakeRenderData()
 	data.Data["HandlerNamespace"] = os.Getenv("HANDLER_NAMESPACE")
 	data.Data["OnPremPlatformAPIServerInternalIP"] = onPremPlatformAPIServerInternalIP
 	data.Data["BaremetalRuntimeCfgImage"] = containerImages.BaremetalRuntimecfg
 	data.Data["HaproxyImage"] = containerImages.HaproxyRouter
 
-	err := r.renderAndApply(instance, data, "haproxy-configmap")
-	if err != nil {
-		errors.Wrap(err, "failed applying haproxy-configmap ")
-		return err
+	if instance.Spec.LoadBalancer.ApiLoadbalance == "Enable" {
+		r.Log.Info("Create HAProxy resources")
+		err = r.renderAndApply(instance, data, "haproxy-configmap")
+		if err != nil {
+			errors.Wrap(err, "failed applying haproxy-configmap ")
+			return err
+		}
+		err = r.renderAndApply(instance, data, "haproxy-daemonset")
+	} else {
+		r.Log.Info("Delete HAProxy resources")
+		err = r.renderAndDelete(instance, data, "haproxy-daemonset")
+		if err != nil {
+			errors.Wrap(err, "failed Deleting haproxy-configmap ")
+			return err
+		}
+		err = r.renderAndDelete(instance, data, "haproxy-configmap")
 	}
-	return r.renderAndApply(instance, data, "haproxy-daemonset")
+
+	return err
 }
 
 func (r *ConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -365,10 +370,20 @@ func (r *ConfigReconciler) syncNamespace(instance *clusterhostednetservicesopens
 }
 
 func (r *ConfigReconciler) renderAndApply(instance *clusterhostednetservicesopenshiftiov1beta1.Config, data render.RenderData, sourceDirectory string) error {
+	return r.renderAndApplyOrDelete(instance, data, sourceDirectory, applyObject)
+}
+
+func (r *ConfigReconciler) renderAndDelete(instance *clusterhostednetservicesopenshiftiov1beta1.Config, data render.RenderData, sourceDirectory string) error {
+	return r.renderAndApplyOrDelete(instance, data, sourceDirectory, deleteObject)
+}
+
+type objFunc func(*ConfigReconciler, context.Context, client.Client, *uns.Unstructured) error
+
+func (r *ConfigReconciler) renderAndApplyOrDelete(instance *clusterhostednetservicesopenshiftiov1beta1.Config, data render.RenderData, sourceDirectory string, fnObj objFunc) error {
 	var err error
 	objs := []*uns.Unstructured{}
 
-	sourceFullDirectory := filepath.Join( /*names.ManifestDir*/ "./bindata", "cluster-hosted", sourceDirectory)
+	sourceFullDirectory := filepath.Join(names.HandlerManifestDir, "cluster-hosted", sourceDirectory)
 
 	objs, err = render.RenderDir(sourceFullDirectory, &data)
 	if err != nil {
@@ -387,12 +402,47 @@ func (r *ConfigReconciler) renderAndApply(instance *clusterhostednetservicesopen
 			continue
 		}
 
-		// Now apply the object
-		err = apply.ApplyObject(context.TODO(), r.Client, obj)
+		// Now Run the fn on object
+		err = fnObj(r, context.TODO(), r.Client, obj)
 		if err != nil {
 			return errors.Wrapf(err, "failed to apply object %v", obj)
 		}
 	}
 
+	return nil
+}
+
+func applyObject(r *ConfigReconciler, ctx context.Context, client client.Client, obj *uns.Unstructured) error {
+	r.Log.V(1).Info("Applying Obj", "Name", obj.GetName())
+	return apply.ApplyObject(ctx, client, obj)
+}
+
+// deleteObject deletes the desired object against the apiserver,
+func deleteObject(r *ConfigReconciler, ctx context.Context, client client.Client, obj *uns.Unstructured) error {
+	name := obj.GetName()
+	namespace := obj.GetNamespace()
+
+	gvk := obj.GroupVersionKind()
+	// used for logging and errors
+	objDesc := fmt.Sprintf("(%s) %s/%s", gvk.String(), namespace, name)
+	r.Log.V(1).Info("Deleting Obj", "objDesc", objDesc)
+
+	// Get existing
+	existing := &uns.Unstructured{}
+	existing.SetGroupVersionKind(gvk)
+	err := client.Get(ctx, types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, existing)
+
+	if err != nil && apierrors.IsNotFound(err) {
+		r.Log.V(1).Info("Obj doesn't exist - do nothing", "objDesc", objDesc)
+		return nil
+	}
+	if err != nil {
+		return errors.Wrapf(err, "could not retrieve existing %s", objDesc)
+	}
+
+	if err = client.Delete(ctx, existing); err != nil {
+		return errors.Wrapf(err, "could not delete object %s", objDesc)
+	}
+	r.Log.V(1).Info("Obj successfully deleted", "objDesc", objDesc)
 	return nil
 }

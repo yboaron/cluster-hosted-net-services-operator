@@ -85,6 +85,7 @@ func main() {
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "3513afbb.my.domain",
+		Namespace:          opertorNamespace,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -147,15 +148,20 @@ func createDefaultOperatorConfig(cfg *rest.Config) error {
 	err = c.Get(context.TODO(), types.NamespacedName{Name: controllers.ClusterHostedNetServicesConfigCR, Namespace: opertorNamespace}, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
+			logger.Info("Default ClusterHostedNetServicesOperatorConfig not found, try to create it")
 			controllers.UpdateDefaultConfigCR(instance, opertorNamespace)
 			err = c.Create(context.TODO(), instance)
-			logger.Info("Create default ClusterHostedNetServicesOperatorConfig: %v", err)
 			if err != nil {
+				logger.Error(err, "Failed to create default ClusterHostedNetServicesOperatorConfig")
 				return err
 			}
+			logger.Info("Default ClusterHostedNetServicesOperatorConfig successfully created")
+			return nil
 		}
 		// Error reading the object - requeue the request.
+		logger.Error(err, "Failed to get default ClusterHostedNetServicesOperatorConfig")
 		return err
 	}
+	logger.Info("Default ClusterHostedNetServicesOperatorConfig already exists")
 	return nil
 }
