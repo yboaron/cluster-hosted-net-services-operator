@@ -3,10 +3,6 @@ apiVersion: image.openshift.io/v1
 kind: ImageStream
 spec:
   tags:
-  - name: cluster-hosted-net-services-operator
-    from:
-      kind: DockerImage
-      name: quay.io/yboaron/cluster-hosted-net-services-operator
   - name: baremetal-runtimecfg
     from:
       kind: DockerImage

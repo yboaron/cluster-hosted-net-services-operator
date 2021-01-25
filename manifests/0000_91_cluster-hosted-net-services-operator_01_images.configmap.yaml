@@ -4,13 +4,14 @@ kind: ConfigMap
 metadata:
   name: cluster-hosted-net-services-operator-images
   namespace: cluster-hosted-net-services-operator
+  annotations:
+    include.release.openshift.io/self-managed-high-availability: "true"
 data:
   images.json: >
     {
-      "clusterHostedCtrl": "quay.io/yboaron/cluster-hosted-net-services-operator",
-      "baremetalRuntimecfg": "quay.io/openshift/origin-baremetal-runtimecfg",
-      "haproxyRouter": "quay.io/openshift/origin-haproxy-router",
-      "keepalivedIpfailover": "quay.io/openshift/origin-keepalived-ipfailover",
-      "mdnsPublisher": "quay.io/openshift/origin-mdns-publisher",
-      "coredns": "quay.io/openshift/origin-coredns"
+      "baremetalRuntimecfg": "registry.svc.ci.openshift.org/openshift:baremetal-runtimecfg",
+      "haproxyRouter": "registry.svc.ci.openshift.org/openshift:haproxy-router",
+      "keepalivedIpfailover": "registry.svc.ci.openshift.org/openshift:keepalived-ipfailover",
+      "mdnsPublisher": "registry.svc.ci.openshift.org/openshift:mdns-publisher",
+      "coredns": "registry.svc.ci.openshift.org/openshift:coredns"
     }
