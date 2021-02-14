@@ -216,11 +216,12 @@ func (r *ConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, errors.Wrap(err, "failed applying RBAC")
 	}
 
-	err = r.syncKeepalived(instance)
-	if err != nil {
-		return ctrl.Result{}, errors.Wrap(err, "failed applying Keepalived")
-	}
-
+	/*
+		err = r.syncKeepalived(instance)
+		if err != nil {
+			return ctrl.Result{}, errors.Wrap(err, "failed applying Keepalived")
+		}
+	*/
 	err = r.syncHaproxy(instance)
 	if err != nil {
 		return ctrl.Result{}, errors.Wrap(err, "failed applying Haproxy")
